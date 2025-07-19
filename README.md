@@ -57,6 +57,7 @@
 	```
 
 ### 二、代码实现细节
+<img width="660" height="1110" alt="image" src="https://github.com/user-attachments/assets/1b88c742-3d39-400d-8697-0563e592e577" />
 
 #### 1. 项目结构
 
