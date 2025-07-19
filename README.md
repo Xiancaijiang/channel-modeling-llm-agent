@@ -57,25 +57,30 @@
 	```
 
 ### 二、代码实现细节
-<img width="660" height="1110" alt="image" src="https://github.com/user-attachments/assets/1b88c742-3d39-400d-8697-0563e592e577" />
+#### 1.系统架构设计
 
-#### 1. 项目结构
+1. **流程图**：
 
-```
-channel-modeling-llm-agent/
-├── app.py                  # Streamlit应用入口
-├── channel_agent.py        # 信道建模智能体核心类
-├── channel_models.py       # 信道模型实现
-├── visualization.py        # 可视化功能
-├── evaluation.py           # 性能评估功能
-├── knowledge_base/         # 领域知识库
-│   ├── channel_theory.txt
-│   ├── 3gpp_standards.txt
-│   └── ...
-├── data/                   # 示例数据
-├── models/                 # 预训练模型缓存
-└── requirements.txt        # 依赖列表
-```
+	![image-20250719162138171](./channel modeling llm agent/image-20250719162138171.png)
+
+2. **项目结构**：
+
+	```
+	channel-modeling-llm-agent/
+	├── app.py                  # Streamlit应用入口
+	├── channel_agent.py        # 信道建模智能体核心类
+	├── channel_models.py       # 信道模型实现
+	├── visualization.py        # 可视化功能
+	├── evaluation.py           # 性能评估功能
+	├── knowledge_base/         # 领域知识库
+	│   ├── channel_theory.txt
+	│   ├── 3gpp_standards.txt
+	│   └── ...
+	├── data/                   # 示例数据
+	├── models/                 # 预训练模型缓存
+	└── requirements.txt        # 依赖列表
+	```
+
 
 #### 2. 关键模块实现
 
