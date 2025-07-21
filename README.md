@@ -61,7 +61,7 @@
 
 1. **流程图**：
 
-	![image-20250719162138171](./channel modeling llm agent/image-20250719162138171.png)
+![deepseek_mermaid_20250720_91e03e](./README/deepseek_mermaid_20250720_91e03e.png)
 
 2. **项目结构**：
 
