@@ -80,7 +80,24 @@
 	├── models/                 # 预训练模型缓存
 	└── requirements.txt        # 依赖列表
 	```
-
+	
+deepseek_mermaid_20250720_91...
+├── src/
+│   ├── TS/
+│   │   ├── Agents.ts             # 主Agent类
+│   │   ├── ChannelEmbeddingRetriever.ts  # 知识检索
+│   │   ├── channelTools.ts       # 工具实现
+│   │   ├── channelTypes.ts       # 类型定义
+│   │   ├── ChatOpenAI.ts         # LLM交互
+│   │   ├── EmbeddingRetriever.ts # 基础检索
+│   │   ├── index.ts              # 入口文件
+│   │   ├── MCPClient.ts          # 协议客户端
+│   │   └── utils.ts              # 工具函数
+├── env                           # 环境配置
+├── .gitignore
+├── package.json
+├── pnpm-lock.yaml
+└── README.md
 
 #### 2. 关键模块实现
 
@@ -225,3 +242,68 @@
 - 集成无线通信系统仿真（如5G/NR物理层）
 - 开发实时信道测量数据接口
 - 添加信道编码和调制方案评估
+
+
+
+### 七、工作流程
+
+mermaid图已经清晰展示了整体结构
+
+LLM + MCP + RAG
+
+ 目标
+- **Augmented LLM** (Chat + MCP + RAG)
+- 不依赖框架 - 内部实现步骤导向
+    - LangChain, LlamaIndex, CrewAI, AutoGen
+- **MCP**
+    - 支持配置多个MCP Serves
+- **RAG** 极度简化板
+
+## **The augmented LLM**
+
+- [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+
+#### **依赖**
+
+```bash
+git clone git@github.com:KelvinQiu802/ts-node-esm-template.git
+pnpm install
+pnpm add dotenv openai @modelcontextprotocol/sdk chalk**
+```
+
+#### LLM
+
+- [OpenAI API](https://platform.openai.com/docs/api-reference/chat)
+
+#### MCP
+
+- [MCP 架构](https://modelcontextprotocol.io/docs/concepts/architecture)
+- [MCP Client](https://modelcontextprotocol.io/quickstart/client)
+- [Fetch MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/fetch)
+- [Filesystem MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem)
+
+#### RAG
+- [Retrieval Augmented Generation](https://scriv.ai/guides/retrieval-augmented-generation-overview/)
+    - 译文: https://www.yuque.com/serviceup/misc/cn-retrieval-augmented-generation-overview
+- 各种Loaders: https://python.langchain.com/docs/integrations/document_loaders/
+- [硅基流动](https://cloud.siliconflow.cn/models)
+    - 邀请码： **x771DtAF**
+- [json数据](https://jsonplaceholder.typicode.com/)
+
+
+#### 向量
+
+- 维度
+- 模长
+- 点乘 Dot Product
+    - 对应位置元素的积，求和
+- 余弦相似度 cos
+    - 1 → 方向完全一致
+    - 0 → 垂直
+    - -1 → 完全想法
+
+
+MCPClient作用是连接到一个mcp服务器，获得这个server的所有工具，并且调用工具。具体可以参考MCP的官方文档的Client实现 2. 工具调用的最终的结果都会作为上下文再传给LLM，这中间的数据流是这样的。 告诉LLM都有哪些工具 -> 通过LLM的工具调用能力返回要调用工具的名称和入参 -> 通过MCPClient调用对应的工具 -> 拿到工具调用结果，注入到上下文 -> LLM根据新的上下文继续推理
+
+MCP是服务器，只不过这个服务器的通讯协议是JSON-RPC。使用npx运行是因为这个服务器的js文件被打包分发了，也有很多mcp服务器是直接提供js或者py文件，不一定都是打包好的库。所以MCP服务器不是Web那种的HTTP服务器，但对于一个MCP客户端来说，MCP服务器确实是个服务器

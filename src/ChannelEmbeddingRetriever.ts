@@ -1,5 +1,5 @@
 import { EmbeddingRetriever } from "./EmbeddingRetriever";
-import { Document } from "langchain/document";
+// import { Document } from "langchain/document";
 
 interface WirelessDocumentMetadata {
     category: string;
@@ -19,7 +19,7 @@ export class ChannelEmbeddingRetriever extends EmbeddingRetriever {
 
     async retrieve(query: string, topK: number): Promise<Document[]> {
         // 优先检索与信道建模相关的文档
-        const enhancedQuery = `${query} 无线通信 信道建模 MIMO OFDM`;
+        const enhancedQuery = `${query}  OFDM`;
         const docs = await super.retrieve(enhancedQuery, topK);
         
         return docs.map(doc => ({

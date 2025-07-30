@@ -11,7 +11,7 @@ export interface ToolCall {
     };
 }
 
-export default class ChatOpenAI {
+export default class ChatOpenAI {      
     private llm: OpenAI;
     private model: string;
     private messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
@@ -28,7 +28,7 @@ export default class ChatOpenAI {
         if (context) this.messages.push({ role: "user", content: context });
     }
 
-    async chat(prompt?: string): Promise<{ content: string, toolCalls: ToolCall[] }> {
+    async chat(prompt?: string): Promise<{ content: string, toolCalls: ToolCall[] }> {   // one chat description
         logTitle('CHAT');
         if (prompt) {
             this.messages.push({ role: "user", content: prompt });
@@ -42,12 +42,12 @@ export default class ChatOpenAI {
         let content = "";
         let toolCalls: ToolCall[] = [];
         logTitle('RESPONSE');
-        for await (const chunk of stream) {
+        for await (const chunk of stream) {    //read chunks from the stream
             const delta = chunk.choices[0].delta;
             // 处理普通Content
             if (delta.content) {
-                const contentChunk = chunk.choices[0].delta.content || "";
-                content += contentChunk;
+                const contentChunk = chunk.choices[0].delta.content || "";     //content may be zero length
+                content += contentChunk;    
                 process.stdout.write(contentChunk);
             }
             // 处理ToolCall
@@ -71,7 +71,7 @@ export default class ChatOpenAI {
         };
     }
 
-    public appendToolResult(toolCallId: string, toolOutput: string) {
+    public appendToolResult(toolCallId: string, toolOutput: string) {  // append tool result to the chat history
         this.messages.push({
             role: "tool",
             content: toolOutput,
@@ -79,7 +79,7 @@ export default class ChatOpenAI {
         });
     }
 
-    private getToolsDefinition(): OpenAI.Chat.Completions.ChatCompletionTool[] {
+    private getToolsDefinition(): OpenAI.Chat.Completions.ChatCompletionTool[] {  // get tools definition for OpenAI API
         return this.tools.map((tool) => ({
             type: "function",
             function: {
@@ -90,3 +90,7 @@ export default class ChatOpenAI {
         }));
     }
 }
+
+
+
+

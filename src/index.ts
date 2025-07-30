@@ -1,44 +1,59 @@
-import MCPClient from "./MCPClient";
-import Agent from "./Agent";
 import path from "path";
-import EmbeddingRetriever from "./EmbeddingRetriever";
-import fs from "fs";
-import { logTitle } from "./utils";
+import ChannelMCPClient from "./MCPClient";
+import ChannelModelingAgent from "./Agent";
+import { ChannelEmbeddingRetriever } from "./ChannelEmbeddingRetriever";
+import { logChannelEvent } from "./utils";
 
-const URL = 'https://news.ycombinator.com/'
-const outPath = path.join(process.cwd(), 'output');
-const TASK = `
-告诉我Antonette的信息,先从我给你的context中找到相关信息,总结后创作一个关于她的故事
-把故事和她的基本信息保存到${outPath}/antonette.md,输出一个漂亮md文件
-`
-
-const fetchMCP = new MCPClient("mcp-server-fetch", "uvx", ['mcp-server-fetch']);
-const fileMCP = new MCPClient("mcp-server-file", "npx", ['-y', '@modelcontextprotocol/server-filesystem', outPath]);
+// 配置常量
+const CONFIG = {
+    OUTPUT_DIR: path.join(__dirname, "../output/channels"),
+    KNOWLEDGE_DIR: path.join(__dirname, "../knowledge/wireless"),
+    DEFAULT_TASK: `
+    请执行以下信道建模任务：
+    1. 生成64x8的MIMO信道矩阵
+    2. 频率3.5GHz，城区环境
+    3. 分析信道特性
+    4. 生成Markdown报告
+    `
+};
 
 async function main() {
-    // RAG
-    const context = await retrieveContext();
+    // 初始化组件
+    const retriever = new ChannelEmbeddingRetriever();
+    await loadKnowledgeBase(retriever);
+    
+    const mcpClient = new MCPClient(
+        "channel-modeling",
+        "python",
+        ["-m", "channel_model", "--precision=fp16"]
+    );
 
-    // Agent
-    const agent = new Agent('openai/gpt-4o-mini', [fetchMCP, fileMCP], '', context);
-    await agent.init();
-    await agent.invoke(TASK);
-    await agent.close();
-}
+    const agent = new ChannelModelingAgent("gpt-4-turbo", [mcpClient]);
 
-main()
-
-async function retrieveContext() {
-    // RAG
-    const embeddingRetriever = new EmbeddingRetriever("BAAI/bge-m3");
-    const knowledgeDir = path.join(process.cwd(), 'knowledge');
-    const files = fs.readdirSync(knowledgeDir);
-    for await (const file of files) {
-        const content = fs.readFileSync(path.join(knowledgeDir, file), 'utf-8');
-        await embeddingRetriever.embedDocument(content);
+    // 执行任务
+    try {
+        await agent.init();
+        const response = await agent.invoke(CONFIG.DEFAULT_TASK);
+        logChannelEvent(`任务完成: ${response.content}`);
+    } finally {
+        await agent.close();
     }
-    const context = (await embeddingRetriever.retrieve(TASK, 3)).join('\n');
-    logTitle('CONTEXT');
-    console.log(context);
-    return context
 }
+
+/** 加载通信领域知识库 */
+async function loadKnowledgeBase(retriever: ChannelEmbeddingRetriever) {
+    const files = fs.readdirSync(CONFIG.KNOWLEDGE_DIR);
+    for (const file of files) {
+        const content = fs.readFileSync(path.join(CONFIG.KNOWLEDGE_DIR, file), 'utf-8');
+        await retriever.embedDocument(content, {
+            source: file,
+            standard: file.includes('3gpp') ? '3GPP' : undefined,
+            category: ""
+        });
+    }
+}
+
+main().catch(err => {
+    logChannelEvent(`运行失败: ${err}`, 'error');
+    process.exit(1);
+});
